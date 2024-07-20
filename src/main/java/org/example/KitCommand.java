@@ -89,6 +89,7 @@ public class KitCommand implements CommandExecutor, Listener {
                             if (getFreeSlots(player) >= 4){
                                 givePlayerKit1(player);
                             }
+                            player.closeInventory();
                         } else {
                             long timeElapsed = System.currentTimeMillis() - cooldown_kit1.get(player.getUniqueId());
 
@@ -98,6 +99,7 @@ public class KitCommand implements CommandExecutor, Listener {
                                 if (getFreeSlots(player) >= 4){
                                     givePlayerKit1(player);
                                 }
+                                player.closeInventory();
                             } else {
                                 player.sendMessage(ChatColor.DARK_RED + "Набор кожанки перезарядится через " + (int) (5000 - timeElapsed) / 1000);
                             }
@@ -109,6 +111,7 @@ public class KitCommand implements CommandExecutor, Listener {
                             if (getFreeSlots(player) >= 4){
                                 givePlayerKit2(player);
                             }
+                            player.closeInventory();
                         } else {
                             long timeElapsed = System.currentTimeMillis() - cooldown_kit2.get(player.getUniqueId());
 
@@ -118,6 +121,7 @@ public class KitCommand implements CommandExecutor, Listener {
                                 if (getFreeSlots(player) >= 4){
                                     givePlayerKit2(player);
                                 }
+                                player.closeInventory();
                             } else {
                                 player.sendMessage(ChatColor.DARK_RED + "Набор хавчика перезарядится через " + (int) (5000 - timeElapsed) / 1000);
                             }

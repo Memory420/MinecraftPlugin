@@ -1,5 +1,5 @@
 name: TestPlugin
-version: 1.0.5a
+version: 1.0.5b
 main: org.example.Main
 api-version: 1.20
 commands:
