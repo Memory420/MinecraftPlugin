@@ -8,7 +8,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,13 +18,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 import static org.example.InventoryUtils.getFreeSlots;
 
 public class KitCommand implements CommandExecutor, Listener {
+    private final HashMap<UUID, Long> cooldown_kit1;
+    private final HashMap<UUID, Long> cooldown_kit2;
     private final NamespacedKey KIT_KEY = new NamespacedKey("testplugin", "kit_type");
     private final Main plugin;
 
     public KitCommand(Main plugin) {
+        this.cooldown_kit1 = new HashMap<>();
+        this.cooldown_kit2 = new HashMap<>();
         this.plugin = plugin;
     }
     @Override
@@ -70,23 +76,55 @@ public class KitCommand implements CommandExecutor, Listener {
     public void onInventoryClick(InventoryClickEvent event){
         if (event.getView().getTitle().equals("Kit menu")) {
             ItemStack item = event.getCurrentItem();
-            if (item != null && item.hasItemMeta()){
+            if (item != null && item.hasItemMeta()) {
                 ItemMeta itemMeta = item.getItemMeta();
-                if(itemMeta != null && itemMeta.getPersistentDataContainer().has(KIT_KEY, PersistentDataType.STRING)){
+                if (itemMeta != null && itemMeta.getPersistentDataContainer().has(KIT_KEY, PersistentDataType.STRING)) {
                     String kitType = itemMeta.getPersistentDataContainer().get(KIT_KEY, PersistentDataType.STRING);
                     Player player = (Player) event.getWhoClicked();
-                    if (kitType.equals("leather_set")){
-                        if (getFreeSlots(player) >= 5){
-                            givePlayerKit1(player);
+
+                    if (kitType.equals("leather_set")) {
+                        if (!this.cooldown_kit1.containsKey(player.getUniqueId())) {
+                            this.cooldown_kit1.put(player.getUniqueId(), System.currentTimeMillis());
+                            player.sendMessage(ChatColor.DARK_AQUA + "Взят набор кожанки");
+                            if (getFreeSlots(player) >= 4){
+                                givePlayerKit1(player);
+                            }
+                        } else {
+                            long timeElapsed = System.currentTimeMillis() - cooldown_kit1.get(player.getUniqueId());
+
+                            if (timeElapsed >= 5000) {
+                                this.cooldown_kit1.put(player.getUniqueId(), System.currentTimeMillis());
+                                player.sendMessage(ChatColor.DARK_AQUA + "Взят набор кожанки");
+                                if (getFreeSlots(player) >= 4){
+                                    givePlayerKit1(player);
+                                }
+                            } else {
+                                player.sendMessage(ChatColor.DARK_RED + "Набор кожанки перезарядится через " + (int) (5000 - timeElapsed) / 1000);
+                            }
                         }
-                    } else if (kitType.equals("food_set")){
-                        if (getFreeSlots(player) >= 4){
-                            givePlayerKit2(player);
+                    } else if (kitType.equals("food_set")) {
+                        if (!this.cooldown_kit2.containsKey(player.getUniqueId())) {
+                            this.cooldown_kit2.put(player.getUniqueId(), System.currentTimeMillis());
+                            player.sendMessage(ChatColor.DARK_AQUA + "Взят набор хавчика");
+                            if (getFreeSlots(player) >= 4){
+                                givePlayerKit2(player);
+                            }
+                        } else {
+                            long timeElapsed = System.currentTimeMillis() - cooldown_kit2.get(player.getUniqueId());
+
+                            if (timeElapsed >= 5000) {
+                                this.cooldown_kit2.put(player.getUniqueId(), System.currentTimeMillis());
+                                player.sendMessage(ChatColor.DARK_AQUA + "Взят набор хавчика");
+                                if (getFreeSlots(player) >= 4){
+                                    givePlayerKit2(player);
+                                }
+                            } else {
+                                player.sendMessage(ChatColor.DARK_RED + "Набор хавчика перезарядится через " + (int) (5000 - timeElapsed) / 1000);
+                            }
                         }
                     }
+                    event.setCancelled(true);
                 }
-
-            event.setCancelled(true);
             }
         }
     }
@@ -103,6 +141,7 @@ public class KitCommand implements CommandExecutor, Listener {
         player.getInventory().addItem(boots);
         player.getInventory().addItem(stone_sword);
 
+        player.sendMessage(ChatColor.DARK_AQUA + "Выдан набор кожанщика");
     }
     public void givePlayerKit2(Player player){
         ItemStack food1 = new ItemStack(Material.COOKED_CHICKEN, 8);
@@ -114,5 +153,7 @@ public class KitCommand implements CommandExecutor, Listener {
         player.getInventory().addItem(food2);
         player.getInventory().addItem(food3);
         player.getInventory().addItem(food4);
+
+        player.sendMessage(ChatColor.DARK_AQUA + "Выдан набор хавчика");
     }
 }
